@@ -52,6 +52,10 @@ class Table extends BaseTable
         return $namespace;
     }
 
+    public function getBaseEntityNamespace() {
+        return 'Base\\'.$this->getEntityNamespace();
+    }
+
     /**
      * Get the entity cacheMode.
      *
@@ -69,9 +73,14 @@ class Table extends BaseTable
      * @param string $class The class name
      * @return string
      */
-    public function getNamespace($class = null, $absolute = true)
+    public function getNamespace($class = null, $absolute = true, $base = false)
     {
-        return sprintf('%s%s\%s', $absolute ? '\\' : '', $this->getEntityNamespace(), null === $class ? $this->getModelName() : $class);
+        return sprintf(
+            '%s%s\%s',
+            $absolute ? '\\' : '',
+            $base ? $this->getBaseEntityNamespace() : $this->getEntityNamespace(),
+            null === $class ? $this->getModelName() : $class
+        );
     }
 
     /**
@@ -130,18 +139,20 @@ class Table extends BaseTable
          */
 
         $nameFromCommentTag = '';
-        if ($this->getModelName() !== $name) {
+//        if ($this->getModelName() !== $name) {
 
             $relatedNames = trim($this->parseComment('relatedNames'));
 
-            foreach (explode("\n", $relatedNames) as $relationMap) {
-                list($toChange, $replacement) = explode(':', $relationMap, 2);
-                if ($name === $toChange) {
-                    $nameFromCommentTag = $replacement;
-                    break;
+            if ('' !== $relatedNames) {
+                foreach (explode("\n", $relatedNames) as $relationMap) {
+                    list($toChange, $replacement) = explode(':', $relationMap, 2);
+                    if ($name === $toChange) {
+                        $nameFromCommentTag = $replacement;
+                        break;
+                    }
                 }
             }
-        }
+//        }
         if ($nameFromCommentTag) {
             $name = $nameFromCommentTag;
         }
