@@ -104,14 +104,19 @@ class Column extends BaseColumn
                 'get_return' => $this->returnTypehint($nativeType, null === $this->getDefaultValue() ? true : !$this->isNotNull()),
             ];
 
+            $hasSetArg = '' !== $typehints['set_arg'];
+            $hasSetReturn = '' !== $typehints['set_phpdoc_return'];
+
+            $hasGetReturn = '' !== $typehints['get_return'];
+
             $writer
                 // setter
                 ->write('/**')
                 ->write(' * Set the value of '.$this->getColumnName().'.')
-                ->write(' *')
-                ->write(' * @param '.$typehints['set_phpdoc_arg'].' $'.$this->getColumnName())
-                ->write(' *')
-                ->write(' * @return '.$typehints['set_phpdoc_return'])
+                ->writeIf($hasSetArg, ' *')
+                ->writeIf($hasSetArg, ' * @param '.$typehints['set_phpdoc_arg'].' $'.$this->getColumnName())
+                ->writeIf($hasSetReturn, ' *')
+                ->writeIf($hasSetReturn, ' * @return '.$typehints['set_phpdoc_return'])
                 ->write(' */')
                 ->write('public function set'.$this->getBeautifiedColumnName().'('.$typehints['set_arg'].'$'.$this->getColumnName().')'.$typehints['set_return'])
                 ->write('{')
@@ -125,8 +130,8 @@ class Column extends BaseColumn
                 // getter
                 ->write('/**')
                 ->write(' * Get the value of '.$this->getColumnName().'.')
-                ->write(' *')
-                ->write(' * @return '.$typehints['get_phpdoc'])
+                ->writeIf($hasGetReturn, ' *')
+                ->writeIf($hasGetReturn, ' * @return '.$typehints['get_phpdoc'])
                 ->write(' */')
                 ->write('public function '.$this->getColumnGetterName().'()'.$typehints['get_return'])
                 ->write('{')
